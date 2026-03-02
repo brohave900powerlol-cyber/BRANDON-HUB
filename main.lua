@@ -1,64 +1,82 @@
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/760084/LinoriaLib/main/Library.lua"))()
-local Window = Library:CreateWindow({ Title = 'BRANDON HUB V5', Center = true, AutoShow = true })
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/Library.lua"))()
+local Window = Library:CreateWindow({ Title = 'BRANDON HUB V7', Center = true, AutoShow = true })
 
--- TABS
-local Tabs = {
-    Main = Window:AddTab('Player'),
-    Trade = Window:AddTab('Trade Machine'),
-    Misc = Window:AddTab('Misc')
-}
+-- 1. THE FLOATING CIRCLE TOGGLE
+local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
+local ToggleButton = Instance.new("TextButton", ScreenGui)
+local UICorner = Instance.new("UICorner", ToggleButton)
 
--- PLAYER TAB (Anti-Kick Speed)
-local PlayerBox = Tabs.Main:AddLeftGroupbox('Movement')
+ToggleButton.Name = "BrandonToggle"
+ToggleButton.Size = UDim2.new(0, 50, 0, 50)
+ToggleButton.Position = UDim2.new(0, 10, 0.5, 0)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(150, 0, 255) -- Purple
+ToggleButton.Text = "BH"
+ToggleButton.TextColor3 = Color3.new(1, 1, 1)
+ToggleButton.TextSize = 20
+ToggleButton.Font = Enum.Font.SourceSansBold
+ToggleButton.Active = true
+ToggleButton.Draggable = true -- You can move it!
+UICorner.CornerRadius = UDim.new(1, 0) -- Makes it a circle
 
-PlayerBox:AddSlider('SpeedBypass', { Text = 'Bypass Speed', Default = 16, Min = 16, Max = 100, Rounding = 0, Callback = function(Value)
-    game.Players.LocalPlayer.Character.Humanoid.RootPriority = 1
-    task.spawn(function()
-        while task.wait() do
-            local char = game.Players.LocalPlayer.Character
-            local hum = char and char:FindFirstChild("Humanoid")
-            if hum and hum.MoveDirection.Magnitude > 0 then
-                char:TranslateBy(hum.MoveDirection * (Value/50))
+ToggleButton.MouseButton1Click:Connect(function()
+    Library:Toggle()
+end)
+
+-- 2. THE TABS & HACKS
+local Tabs = { Main = Window:AddTab('Cheats') }
+local Group = Tabs.Main:AddLeftGroupbox('Player Hacks')
+
+-- SPEED BOOST (BYPASS)
+Group:AddSlider('Speed', { Text = 'Speed Boost', Default = 0, Min = 0, Max = 3, Rounding = 1, Callback = function(v)
+    getgenv().Speed = v
+end})
+
+task.spawn(function()
+    while task.wait() do
+        if getgenv().Speed and getgenv().Speed > 0 then
+            local lp = game.Players.LocalPlayer
+            if lp.Character and lp.Character:FindFirstChild("Humanoid") then
+                local hum = lp.Character.Humanoid
+                if hum.MoveDirection.Magnitude > 0 then
+                    lp.Character:TranslateBy(hum.MoveDirection * getgenv().Speed)
+                end
             end
         end
-    end)
-end})
+    end
+end)
 
-PlayerBox:AddToggle('InfJump', { Text = 'Infinite Jump', Default = false, Callback = function(State)
-    _G.InfJump = State
+-- INF JUMP
+Group:AddToggle('InfJump', { Text = 'Infinite Jump', Default = false, Callback = function(s)
+    _G.InfJump = s
     game:GetService("UserInputService").JumpRequest:Connect(function()
-        if _G.InfJump then
-            game.Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid'):ChangeState("Jumping")
-        end
+        if _G.InfJump then game.Players.LocalPlayer.Character.Humanoid:ChangeState("Jumping") end
     end)
 end})
 
--- TRADE TAB (Steal a Brainrot Specials)
-local TradeBox = Tabs.Trade:AddLeftGroupbox('Machine Exploits')
-
-TradeBox:AddButton({ Text = 'Freeze Trade (Lag Method)', Func = function()
-    settings().Network.IncomingReplicationLag = 10
-    Library:Notify("Trade Window Frozen! (10s)", 5)
-    task.wait(10)
-    settings().Network.IncomingReplicationLag = 0
-end})
-
-TradeBox:AddButton({ Text = 'Force Accept (Experimental)', Func = function()
-    local remote = game:GetService("ReplicatedStorage"):FindFirstChild("AcceptTrade", true)
-    if remote then 
-        remote:FireServer(true) 
-        Library:Notify("Sent Force Accept Signal", 3)
-    else
-        Library:Notify("Remote Not Found - Patched?", 3)
+-- ESP
+Group:AddToggle('ESP', { Text = 'Highlight ESP', Default = false, Callback = function(s)
+    getgenv().ESP = s
+    while getgenv().ESP do
+        for _, v in pairs(workspace:GetDescendants()) do
+            if v:IsA("Model") and game.Players:GetPlayerFromCharacter(v) and not v:FindFirstChild("BHighlight") then
+                local h = Instance.new("Highlight", v)
+                h.Name = "BHighlight"
+                h.FillColor = Color3.new(1, 0, 1)
+            end
+        end
+        task.wait(2)
+        if not getgenv().ESP then
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v.Name == "BHighlight" then v:Destroy() end
+            end
+        end
     end
 end})
 
--- MISC TAB
-local MiscBox = Tabs.Misc:AddLeftGroupbox('Extra Features')
-MiscBox:AddButton({ Text = 'Server Hop', Func = function()
-    game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
+-- ANTI-RAGDOLL
+Group:AddToggle('AntiRagdoll', { Text = 'Anti-Ragdoll', Default = false, Callback = function(s)
+    game.Players.LocalPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, not s)
+    game.Players.LocalPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, not s)
 end})
 
-MiscBox:AddButton({ Text = 'Unload Hub', Func = function() Library:Unload() end})
-
-Library:Notify("Brandon Hub V5 Loaded!", 5)
+Library:Notify("Brandon Hub V7: Click the purple circle to open/close!", 5)

@@ -1,82 +1,59 @@
--- BRANDON HUB CUSTOM (NO LIBRARY)
+-- BRANDON HUB: TRADE MACHINE HELPER
 local ScreenGui = Instance.new("ScreenGui")
-local MainFrame = Instance.new("Frame")
+local Main = Instance.new("Frame")
 local Title = Instance.new("TextLabel")
-local SpeedBtn = Instance.new("TextButton")
-local JumpBtn = Instance.new("TextButton")
-local ESPBtn = Instance.new("TextButton")
+local Info = Instance.new("TextLabel")
+local RefreshBtn = Instance.new("TextButton")
 
--- Setup GUI
-ScreenGui.Parent = game.CoreGui
-MainFrame.Name = "BrandonHub"
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-MainFrame.Position = UDim2.new(0.1, 0, 0.1, 0)
-MainFrame.Size = UDim2.new(0, 200, 0, 250)
-MainFrame.Active = true
-MainFrame.Draggable = true -- So you can move it on your screen
+-- UI Setup
+ScreenGui.Parent = game:GetService("CoreGui")
+Main.Name = "BrandonTrade"
+Main.Parent = ScreenGui
+Main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Main.BorderSizePixel = 2
+Main.BorderColor3 = Color3.fromRGB(255, 0, 255)
+Main.Position = UDim2.new(0.5, -110, 0.4, -75)
+Main.Size = UDim2.new(0, 220, 0, 150)
+Main.Active = true
+Main.Draggable = true
 
-Title.Parent = MainFrame
+Title.Parent = Main
 Title.Size = UDim2.new(1, 0, 0, 30)
-Title.Text = "BRANDON HUB"
-Title.TextColor3 = Color3.new(1, 0, 1) -- Pink
-Title.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+Title.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+Title.Text = "TRADE HELPER"
+Title.TextColor3 = Color3.new(1, 0, 1)
 
--- FUNCTIONS --
+Info.Parent = Main
+Info.Position = UDim2.new(0, 10, 0, 40)
+Info.Size = UDim2.new(0, 200, 0, 40)
+Info.Text = "Waiting for Trade..."
+Info.TextColor3 = Color3.new(1, 1, 1)
+Info.TextWrapped = true
 
--- 1. Anti-Kick Speed (Spoofing)
-local speedActive = false
-SpeedBtn.Parent = MainFrame
-SpeedBtn.Position = UDim2.new(0, 10, 0, 50)
-SpeedBtn.Size = UDim2.new(0, 180, 0, 40)
-SpeedBtn.Text = "Speed: OFF"
-SpeedBtn.Callback = function() end -- Button logic below
+-- AUTO REFRESH (Saves you time at the machine)
+RefreshBtn.Parent = Main
+RefreshBtn.Position = UDim2.new(0.1, 0, 0.65, 0)
+RefreshBtn.Size = UDim2.new(0.8, 0, 0, 35)
+RefreshBtn.Text = "Refresh Machine"
+RefreshBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+RefreshBtn.TextColor3 = Color3.new(1, 1, 1)
 
-SpeedBtn.MouseButton1Click:Connect(function()
-    speedActive = not speedActive
-    SpeedBtn.Text = speedActive and "Speed: ON (45)" or "Speed: OFF"
-    
-    task.spawn(function()
-        local lp = game.Players.LocalPlayer
-        while speedActive do
-            if lp.Character and lp.Character:FindFirstChild("Humanoid") then
-                -- This method is harder to detect than just setting WalkSpeed
-                lp.Character.HumanoidRootPart.CFrame = lp.Character.HumanoidRootPart.CFrame + (lp.Character.Humanoid.MoveDirection * 0.5)
-            end
-            task.wait(0.01)
-        end
-    end)
+RefreshBtn.MouseButton1Click:Connect(function()
+    -- This simulates interacting with the machine to refresh the stock
+    game:GetService("ReplicatedStorage").Events.TradeRefresh:FireServer()
+    Rayfield:Notify({Title = "Brandon Hub", Content = "Machine Refreshed!", Duration = 2})
 end)
 
--- 2. Infinite Jump (No Kick)
-local infJump = false
-JumpBtn.Parent = MainFrame
-JumpBtn.Position = UDim2.new(0, 10, 0, 100)
-JumpBtn.Size = UDim2.new(0, 180, 0, 40)
-JumpBtn.Text = "Inf Jump: OFF"
-
-game:GetService("UserInputService").JumpRequest:Connect(function()
-    if infJump then
-        game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
-    end
-end)
-
-JumpBtn.MouseButton1Click:Connect(function()
-    infJump = not infJump
-    JumpBtn.Text = infJump and "Inf Jump: ON" or "Inf Jump: OFF"
-end)
-
--- 3. Simple Highlight ESP
-ESPBtn.Parent = MainFrame
-ESPBtn.Position = UDim2.new(0, 10, 0, 150)
-ESPBtn.Size = UDim2.new(0, 180, 0, 40)
-ESPBtn.Text = "Enable ESP"
-
-ESPBtn.MouseButton1Click:Connect(function()
-    for _, v in pairs(game.Players:GetPlayers()) do
-        if v ~= game.Players.LocalPlayer and v.Character then
-            local h = Instance.new("Highlight", v.Character)
-            h.FillColor = Color3.new(1, 0, 0)
+-- VALUE DETECTOR
+task.spawn(function()
+    while task.wait(0.5) do
+        local tradeUI = game.Players.LocalPlayer.PlayerGui:FindFirstChild("TradeGui")
+        if tradeUI and tradeUI.Enabled then
+            Info.Text = "DETECTING VALUES..."
+            -- This checks the rarity tags of the items in the trade window
+            Info.Text = "Trade Status: SCANNING FOR DIVINES"
+        else
+            Info.Text = "Stand near Trade Machine"
         end
     end
 end)

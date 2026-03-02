@@ -1,4 +1,4 @@
--- BRANDON HUB: THE FINAL BOSS EDITION
+
 local Players = game:GetService("Players")
 local RS = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")

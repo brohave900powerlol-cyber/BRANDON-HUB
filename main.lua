@@ -1,59 +1,61 @@
 
+print("Brandon Hub: Starting Load...") -- Check your F9 Console for this!
+
 local Players = game:GetService("Players")
 local RS = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 local lp = Players.LocalPlayer
 
--- System Variables
+-- Clean up old versions
+if game:GetService("CoreGui"):FindFirstChild("BrandonHub") then
+    game:GetService("CoreGui").BrandonHub:Destroy()
+end
+
+-- Variables
 local speedEnabled = false
 local grabEnabled = false
 local currentSpeed = 50
 
--- 1. GUI CONTAINER
+-- GUI SETUP
 local BrandonHub = Instance.new("ScreenGui")
 BrandonHub.Name = "BrandonHub"
 BrandonHub.Parent = game:GetService("CoreGui")
 BrandonHub.ResetOnSpawn = false
 
--- 2. THE TOGGLE CIRCLE (Open/Close Button)
+-- TOGGLE BUTTON (The "B" Circle)
 local ToggleCircle = Instance.new("TextButton")
-ToggleCircle.Name = "ToggleCircle"
 ToggleCircle.Parent = BrandonHub
-ToggleCircle.Size = UDim2.new(0, 50, 0, 50)
-ToggleCircle.Position = UDim2.new(0.05, 0, 0.4, 0) -- Left side of screen
+ToggleCircle.Size = UDim2.new(0, 55, 0, 55)
+ToggleCircle.Position = UDim2.new(0.02, 0, 0.4, 0)
 ToggleCircle.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 ToggleCircle.Text = "B"
-ToggleCircle.TextColor3 = Color3.fromRGB(135, 206, 235) -- Sky Blue
-ToggleCircle.TextSize = 24
+ToggleCircle.TextColor3 = Color3.fromRGB(135, 206, 235)
+ToggleCircle.TextSize = 25
 ToggleCircle.Font = Enum.Font.GothamBold
-ToggleCircle.Active = true
-ToggleCircle.Draggable = true -- You can drag the circle anywhere!
-
+ToggleCircle.Draggable = true
 Instance.new("UICorner", ToggleCircle).CornerRadius = UDim.new(1, 0)
-local CircleStroke = Instance.new("UIStroke", ToggleCircle)
-CircleStroke.Color = Color3.fromRGB(135, 206, 235)
-CircleStroke.Thickness = 2
+Instance.new("UIStroke", ToggleCircle).Color = Color3.fromRGB(135, 206, 235)
 
--- 3. THE MAIN HUB FRAME
+-- MAIN HUB
 local Main = Instance.new("Frame")
 Main.Name = "MainFrame"
-Main.Visible = false -- Starts hidden
-Main.Size = UDim2.new(0, 350, 0, 500)
-Main.Position = UDim2.new(0.5, -175, 0.5, -250)
+Main.Visible = false -- Click the "B" to see it!
+Main.Size = UDim2.new(0, 340, 0, 480)
+Main.Position = UDim2.new(0.5, -170, 0.5, -240)
 Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 Main.BorderSizePixel = 0
 Main.Active = true
 Main.Draggable = true
 Main.Parent = BrandonHub
 
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
 local MainStroke = Instance.new("UIStroke", Main)
 MainStroke.Color = Color3.fromRGB(135, 206, 235)
 MainStroke.Thickness = 2
 
 -- LOGO & TITLE
 local Logo = Instance.new("ImageLabel")
-Logo.Size = UDim2.new(1, 0, 0, 150)
+Logo.Size = UDim2.new(1, 0, 0, 140)
 Logo.Image = "rbxassetid://17355005862"
 Logo.BackgroundTransparency = 1
 Logo.ScaleType = Enum.ScaleType.Fit
@@ -61,7 +63,7 @@ Logo.Parent = Main
 
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 30)
-Title.Position = UDim2.new(0, 0, 0, 155)
+Title.Position = UDim2.new(0, 0, 0, 145)
 Title.Text = "Brandon Hub"
 Title.TextColor3 = Color3.fromRGB(135, 206, 235)
 Title.BackgroundTransparency = 1
@@ -72,8 +74,8 @@ Title.Parent = Main
 -- SPEED INPUT
 local SpeedInput = Instance.new("TextBox")
 SpeedInput.Size = UDim2.new(0.9, 0, 0, 40)
-SpeedInput.Position = UDim2.new(0.05, 0, 0, 195)
-SpeedInput.PlaceholderText = "Type Speed & Press Enter"
+SpeedInput.Position = UDim2.new(0.05, 0, 0, 185)
+SpeedInput.PlaceholderText = "Enter Speed & Press Enter"
 SpeedInput.Text = ""
 SpeedInput.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 SpeedInput.TextColor3 = Color3.new(1, 1, 1)
@@ -105,19 +107,18 @@ local function makeBtn(name, pos, callback)
     end)
 end
 
-makeBtn("Speed Boost", UDim2.new(0.05, 0, 0, 250), function(v) speedEnabled = v end)
-makeBtn("Insta-Grab", UDim2.new(0.05, 0, 0, 305), function(v) grabEnabled = v end)
+makeBtn("Speed Boost", UDim2.new(0.05, 0, 0, 240), function(v) speedEnabled = v end)
+makeBtn("Insta-Grab", UDim2.new(0.05, 0, 0, 295), function(v) grabEnabled = v end)
 
--- TOGGLE LOGIC (Open/Close)
+-- TOGGLE LOGIC
 ToggleCircle.MouseButton1Click:Connect(function()
     Main.Visible = not Main.Visible
 end)
 
--- THE FIX: RE-PRIORITIZED SPEED & JUMP
+-- CORE LOGIC
 RS.Stepped:Connect(function()
     if speedEnabled and lp.Character and lp.Character:FindFirstChild("Humanoid") then
         lp.Character.Humanoid.WalkSpeed = currentSpeed
-        -- Forces movement even if game resets WalkSpeed
         if lp.Character.Humanoid.MoveDirection.Magnitude > 0 then
             lp.Character:TranslateBy(lp.Character.Humanoid.MoveDirection * (currentSpeed / 100))
         end
@@ -133,3 +134,5 @@ end)
 game:GetService("ProximityPromptService").PromptButtonHoldBegan:Connect(function(p)
     if grabEnabled then fireproximityprompt(p) end
 end)
+
+print("Brandon Hub: Load Successful!")

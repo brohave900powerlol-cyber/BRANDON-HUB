@@ -1,59 +1,64 @@
--- BRANDON HUB: TRADE MACHINE HELPER
-local ScreenGui = Instance.new("ScreenGui")
-local Main = Instance.new("Frame")
-local Title = Instance.new("TextLabel")
-local Info = Instance.new("TextLabel")
-local RefreshBtn = Instance.new("TextButton")
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/760084/LinoriaLib/main/Library.lua"))()
+local Window = Library:CreateWindow({ Title = 'BRANDON HUB V5', Center = true, AutoShow = true })
 
--- UI Setup
-ScreenGui.Parent = game:GetService("CoreGui")
-Main.Name = "BrandonTrade"
-Main.Parent = ScreenGui
-Main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-Main.BorderSizePixel = 2
-Main.BorderColor3 = Color3.fromRGB(255, 0, 255)
-Main.Position = UDim2.new(0.5, -110, 0.4, -75)
-Main.Size = UDim2.new(0, 220, 0, 150)
-Main.Active = true
-Main.Draggable = true
+-- TABS
+local Tabs = {
+    Main = Window:AddTab('Player'),
+    Trade = Window:AddTab('Trade Machine'),
+    Misc = Window:AddTab('Misc')
+}
 
-Title.Parent = Main
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-Title.Text = "TRADE HELPER"
-Title.TextColor3 = Color3.new(1, 0, 1)
+-- PLAYER TAB (Anti-Kick Speed)
+local PlayerBox = Tabs.Main:AddLeftGroupbox('Movement')
 
-Info.Parent = Main
-Info.Position = UDim2.new(0, 10, 0, 40)
-Info.Size = UDim2.new(0, 200, 0, 40)
-Info.Text = "Waiting for Trade..."
-Info.TextColor3 = Color3.new(1, 1, 1)
-Info.TextWrapped = true
-
--- AUTO REFRESH (Saves you time at the machine)
-RefreshBtn.Parent = Main
-RefreshBtn.Position = UDim2.new(0.1, 0, 0.65, 0)
-RefreshBtn.Size = UDim2.new(0.8, 0, 0, 35)
-RefreshBtn.Text = "Refresh Machine"
-RefreshBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-RefreshBtn.TextColor3 = Color3.new(1, 1, 1)
-
-RefreshBtn.MouseButton1Click:Connect(function()
-    -- This simulates interacting with the machine to refresh the stock
-    game:GetService("ReplicatedStorage").Events.TradeRefresh:FireServer()
-    Rayfield:Notify({Title = "Brandon Hub", Content = "Machine Refreshed!", Duration = 2})
-end)
-
--- VALUE DETECTOR
-task.spawn(function()
-    while task.wait(0.5) do
-        local tradeUI = game.Players.LocalPlayer.PlayerGui:FindFirstChild("TradeGui")
-        if tradeUI and tradeUI.Enabled then
-            Info.Text = "DETECTING VALUES..."
-            -- This checks the rarity tags of the items in the trade window
-            Info.Text = "Trade Status: SCANNING FOR DIVINES"
-        else
-            Info.Text = "Stand near Trade Machine"
+PlayerBox:AddSlider('SpeedBypass', { Text = 'Bypass Speed', Default = 16, Min = 16, Max = 100, Rounding = 0, Callback = function(Value)
+    game.Players.LocalPlayer.Character.Humanoid.RootPriority = 1
+    task.spawn(function()
+        while task.wait() do
+            local char = game.Players.LocalPlayer.Character
+            local hum = char and char:FindFirstChild("Humanoid")
+            if hum and hum.MoveDirection.Magnitude > 0 then
+                char:TranslateBy(hum.MoveDirection * (Value/50))
+            end
         end
+    end)
+end})
+
+PlayerBox:AddToggle('InfJump', { Text = 'Infinite Jump', Default = false, Callback = function(State)
+    _G.InfJump = State
+    game:GetService("UserInputService").JumpRequest:Connect(function()
+        if _G.InfJump then
+            game.Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid'):ChangeState("Jumping")
+        end
+    end)
+end})
+
+-- TRADE TAB (Steal a Brainrot Specials)
+local TradeBox = Tabs.Trade:AddLeftGroupbox('Machine Exploits')
+
+TradeBox:AddButton({ Text = 'Freeze Trade (Lag Method)', Func = function()
+    settings().Network.IncomingReplicationLag = 10
+    Library:Notify("Trade Window Frozen! (10s)", 5)
+    task.wait(10)
+    settings().Network.IncomingReplicationLag = 0
+end})
+
+TradeBox:AddButton({ Text = 'Force Accept (Experimental)', Func = function()
+    local remote = game:GetService("ReplicatedStorage"):FindFirstChild("AcceptTrade", true)
+    if remote then 
+        remote:FireServer(true) 
+        Library:Notify("Sent Force Accept Signal", 3)
+    else
+        Library:Notify("Remote Not Found - Patched?", 3)
     end
-end)
+end})
+
+-- MISC TAB
+local MiscBox = Tabs.Misc:AddLeftGroupbox('Extra Features')
+MiscBox:AddButton({ Text = 'Server Hop', Func = function()
+    game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
+end})
+
+MiscBox:AddButton({ Text = 'Unload Hub', Func = function() Library:Unload() end})
+
+Library:Notify("Brandon Hub V5 Loaded!", 5)

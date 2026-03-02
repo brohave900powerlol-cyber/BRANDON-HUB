@@ -105,3 +105,20 @@ RS.Stepped:Connect(function()
         end
     end
 end)
+-- BRANDON HUB: SMOOTH SPEED (NO-DIE VERSION)
+RS.Stepped:Connect(function()
+    if speedEnabled and lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = lp.Character.HumanoidRootPart
+        local hum = lp.Character.Humanoid
+        
+        -- Only apply speed if you are actually trying to move
+        if hum.MoveDirection.Magnitude > 0 then
+            -- We multiply your direction by the speed, but keep your falling gravity (Y) the same
+            hrp.AssemblyLinearVelocity = Vector3.new(
+                hum.MoveDirection.X * currentSpeed, 
+                hrp.AssemblyLinearVelocity.Y, 
+                hum.MoveDirection.Z * currentSpeed
+            )
+        end
+    end
+end)

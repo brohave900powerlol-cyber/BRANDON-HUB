@@ -1,98 +1,82 @@
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- BRANDON HUB CUSTOM (NO LIBRARY)
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local SpeedBtn = Instance.new("TextButton")
+local JumpBtn = Instance.new("TextButton")
+local ESPBtn = Instance.new("TextButton")
 
-local Window = Rayfield:CreateWindow({
-   Name = "BRANDON HUB | 2026 EDITION",
-   LoadingTitle = "Delta Executor Loading...",
-   LoadingSubtitle = "by Brandon",
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = "BrandonHubConfigs",
-      FileName = "MainConfig"
-   }
-})
+-- Setup GUI
+ScreenGui.Parent = game.CoreGui
+MainFrame.Name = "BrandonHub"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.Position = UDim2.new(0.1, 0, 0.1, 0)
+MainFrame.Size = UDim2.new(0, 200, 0, 250)
+MainFrame.Active = true
+MainFrame.Draggable = true -- So you can move it on your screen
 
-local MainTab = Window:CreateTab("Main Cheats", 4483362458)
-local Section = MainTab:CreateSection("Character Mods")
+Title.Parent = MainFrame
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Text = "BRANDON HUB"
+Title.TextColor3 = Color3.new(1, 0, 1) -- Pink
+Title.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 
--- Variables for Logic
-local lp = game.Players.LocalPlayer
-local walkSpeedValue = 58
-local jumpPowerValue = 50
+-- FUNCTIONS --
 
--- SPEED MOD
-MainTab:CreateSlider({
-   Name = "WalkSpeed Custom",
-   Range = {16, 300},
-   Increment = 1,
-   Suffix = " Speed",
-   CurrentValue = 58,
-   Flag = "WS_Slider",
-   Callback = function(Value)
-      walkSpeedValue = Value
-   end,
-})
+-- 1. Anti-Kick Speed (Spoofing)
+local speedActive = false
+SpeedBtn.Parent = MainFrame
+SpeedBtn.Position = UDim2.new(0, 10, 0, 50)
+SpeedBtn.Size = UDim2.new(0, 180, 0, 40)
+SpeedBtn.Text = "Speed: OFF"
+SpeedBtn.Callback = function() end -- Button logic below
 
-MainTab:CreateToggle({
-   Name = "Enable Speed [V]",
-   CurrentValue = false,
-   Flag = "WS_Toggle",
-   Callback = function(Value)
-      getgenv().LoopSpeed = Value
-      task.spawn(function()
-         while getgenv().LoopSpeed do
+SpeedBtn.MouseButton1Click:Connect(function()
+    speedActive = not speedActive
+    SpeedBtn.Text = speedActive and "Speed: ON (45)" or "Speed: OFF"
+    
+    task.spawn(function()
+        local lp = game.Players.LocalPlayer
+        while speedActive do
             if lp.Character and lp.Character:FindFirstChild("Humanoid") then
-               lp.Character.Humanoid.WalkSpeed = walkSpeedValue
+                -- This method is harder to detect than just setting WalkSpeed
+                lp.Character.HumanoidRootPart.CFrame = lp.Character.HumanoidRootPart.CFrame + (lp.Character.Humanoid.MoveDirection * 0.5)
             end
-            task.wait(0.1)
-         end
-         if lp.Character:FindFirstChild("Humanoid") then lp.Character.Humanoid.WalkSpeed = 16 end
-      end)
-   end,
-})
+            task.wait(0.01)
+        end
+    end)
+end)
 
--- JUMP MOD
-MainTab:CreateSlider({
-   Name = "Jump Power",
-   Range = {50, 500},
-   Increment = 1,
-   Suffix = " Power",
-   CurrentValue = 50,
-   Flag = "JP_Slider",
-   Callback = function(Value)
-      jumpPowerValue = Value
-   end,
-})
+-- 2. Infinite Jump (No Kick)
+local infJump = false
+JumpBtn.Parent = MainFrame
+JumpBtn.Position = UDim2.new(0, 10, 0, 100)
+JumpBtn.Size = UDim2.new(0, 180, 0, 40)
+JumpBtn.Text = "Inf Jump: OFF"
 
-MainTab:CreateToggle({
-   Name = "Infinite Jump",
-   CurrentValue = false,
-   Flag = "InfJump",
-   Callback = function(Value)
-      getgenv().InfJump = Value
-      game:GetService("UserInputService").JumpRequest:Connect(function()
-         if getgenv().InfJump then
-            lp.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
-         end
-      end)
-   end,
-})
+game:GetService("UserInputService").JumpRequest:Connect(function()
+    if infJump then
+        game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+    end
+end)
 
--- ANTI RAGDOLL
-MainTab:CreateToggle({
-   Name = "Anti Ragdoll",
-   CurrentValue = false,
-   Flag = "NoRagdoll",
-   Callback = function(Value)
-      if lp.Character and lp.Character:FindFirstChild("Humanoid") then
-         lp.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, not Value)
-         lp.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, not Value)
-      end
-   end,
-})
+JumpBtn.MouseButton1Click:Connect(function()
+    infJump = not infJump
+    JumpBtn.Text = infJump and "Inf Jump: ON" or "Inf Jump: OFF"
+end)
 
-Rayfield:Notify({
-   Title = "Brandon Hub Active",
-   Content = "Script loaded successfully on Delta!",
-   Duration = 5,
-   Image = 4483362458,
-})
+-- 3. Simple Highlight ESP
+ESPBtn.Parent = MainFrame
+ESPBtn.Position = UDim2.new(0, 10, 0, 150)
+ESPBtn.Size = UDim2.new(0, 180, 0, 40)
+ESPBtn.Text = "Enable ESP"
+
+ESPBtn.MouseButton1Click:Connect(function()
+    for _, v in pairs(game.Players:GetPlayers()) do
+        if v ~= game.Players.LocalPlayer and v.Character then
+            local h = Instance.new("Highlight", v.Character)
+            h.FillColor = Color3.new(1, 0, 0)
+        end
+    end
+end)

@@ -1,46 +1,43 @@
--- BRANDON SPEED (SAFE VERSION)
+-- ADOPT ME TRADE UTILITY
 local Player = game.Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
 
-if PlayerGui:FindFirstChild("BHubMini") then PlayerGui.BHubMini:Destroy() end
+-- Clean up old button
+if PlayerGui:FindFirstChild("TradeUtil") then PlayerGui.TradeUtil:Destroy() end
 
+-- Create Tiny Toggle
 local ScreenGui = Instance.new("ScreenGui", PlayerGui)
-ScreenGui.Name = "BHubMini"
+ScreenGui.Name = "TradeUtil"
 ScreenGui.ResetOnSpawn = false
 
-local SpeedBtn = Instance.new("TextButton", ScreenGui)
-local Corner = Instance.new("UICorner", SpeedBtn)
+local ToggleBtn = Instance.new("TextButton", ScreenGui)
+local Corner = Instance.new("UICorner", ToggleBtn)
 
-SpeedBtn.Size = UDim2.new(0, 35, 0, 35)
-SpeedBtn.Position = UDim2.new(0, 20, 0.4, 0)
-SpeedBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 255)
-SpeedBtn.Text = "S"
-SpeedBtn.TextColor3 = Color3.new(1, 1, 1)
-SpeedBtn.Draggable = true
-SpeedBtn.Active = true
+ToggleBtn.Size = UDim2.new(0, 40, 0, 40)
+ToggleBtn.Position = UDim2.new(0, 15, 0.6, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255) -- Blue
+ToggleBtn.Text = "TRD"
+ToggleBtn.TextColor3 = Color3.new(1, 1, 1)
+ToggleBtn.Draggable = true
+ToggleBtn.Active = true
 Corner.CornerRadius = UDim.new(1, 0)
 
--- SAFE SPEED SETTINGS
-local NormalSpeed = 16
-local BoostSpeed = 50 -- You can change this (don't go over 100 or you might die)
+-- UTILITY LOGIC
+getgenv().AntiAFK = true
 
-getgenv().SpeedEnabled = false
-
-SpeedBtn.MouseButton1Click:Connect(function()
-    getgenv().SpeedEnabled = not getgenv().SpeedEnabled
-    SpeedBtn.BackgroundColor3 = getgenv().SpeedEnabled and Color3.fromRGB(0, 255, 120) or Color3.fromRGB(150, 0, 255)
-    
-    local char = Player.Character
-    local hum = char and char:FindFirstChild("Humanoid")
-    if hum then
-        hum.WalkSpeed = getgenv().SpeedEnabled and BoostSpeed or NormalSpeed
+-- Anti-AFK (Stops you from getting kicked while waiting for trades)
+task.spawn(function()
+    while getgenv().AntiAFK do
+        task.wait(30)
+        game:GetService("VirtualUser"):CaptureController()
+        game:GetService("VirtualUser"):ClickButton2(Vector2.new(0,0))
     end
 end)
 
--- AUTO-FIX ON RESPAWN
-Player.CharacterAdded:Connect(function(char)
-    local hum = char:WaitForChild("Humanoid")
-    if getgenv().SpeedEnabled then
-        hum.WalkSpeed = BoostSpeed
-    end
+ToggleBtn.MouseButton1Click:Connect(function()
+    -- This sends a message to your console telling you when someone trades you
+    print("Trade Utility is Active. Waiting for incoming trades...")
+    ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 150)
+    task.wait(0.5)
+    ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
 end)

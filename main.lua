@@ -1,43 +1,31 @@
--- ADOPT ME TRADE UTILITY
-local Player = game.Players.LocalPlayer
-local PlayerGui = Player:WaitForChild("PlayerGui")
+-- BRANDON-HUB VISUAL PETS (CHROMEBOOK SAFE)
+local Player = game:GetService("Players").LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
 
--- Clean up old button
-if PlayerGui:FindFirstChild("TradeUtil") then PlayerGui.TradeUtil:Destroy() end
+-- Set the name of the pet you WANT to see
+local DesiredPet = "Shadow Dragon" 
 
--- Create Tiny Toggle
-local ScreenGui = Instance.new("ScreenGui", PlayerGui)
-ScreenGui.Name = "TradeUtil"
-ScreenGui.ResetOnSpawn = false
-
-local ToggleBtn = Instance.new("TextButton", ScreenGui)
-local Corner = Instance.new("UICorner", ToggleBtn)
-
-ToggleBtn.Size = UDim2.new(0, 40, 0, 40)
-ToggleBtn.Position = UDim2.new(0, 15, 0.6, 0)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255) -- Blue
-ToggleBtn.Text = "TRD"
-ToggleBtn.TextColor3 = Color3.new(1, 1, 1)
-ToggleBtn.Draggable = true
-ToggleBtn.Active = true
-Corner.CornerRadius = UDim.new(1, 0)
-
--- UTILITY LOGIC
-getgenv().AntiAFK = true
-
--- Anti-AFK (Stops you from getting kicked while waiting for trades)
-task.spawn(function()
-    while getgenv().AntiAFK do
-        task.wait(30)
-        game:GetService("VirtualUser"):CaptureController()
-        game:GetService("VirtualUser"):ClickButton2(Vector2.new(0,0))
+local function MakeVisual()
+    -- Look for your current equipped pet
+    for _, v in pairs(workspace:GetChildren()) do
+        -- Adopt Me pets usually follow the player in a folder or model
+        if v:IsA("Model") and v:FindFirstChild("PetID") then
+            if v.Name ~= DesiredPet then
+                print("Changing Visual to: " .. DesiredPet)
+                v.Name = DesiredPet
+                -- This changes the label above the pet
+                if v:FindFirstChild("Head") and v.Head:FindFirstChild("Nametag") then
+                    v.Head.Nametag.Label.Text = DesiredPet
+                end
+            end
+        end
     end
-end)
+end
 
-ToggleBtn.MouseButton1Click:Connect(function()
-    -- This sends a message to your console telling you when someone trades you
-    print("Trade Utility is Active. Waiting for incoming trades...")
-    ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 150)
-    task.wait(0.5)
-    ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+-- Run it once, then keep checking every 5 seconds so it doesn't lag Delta
+task.spawn(function()
+    while true do
+        task.wait(5) 
+        pcall(MakeVisual)
+    end
 end)
